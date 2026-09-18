@@ -1,0 +1,11 @@
+ml_models/
+images/
+backups/
+__pycache__/
+*.pyc
+*.pkl
+.env
+.git/
+.gitignore
+*.md
+load.py

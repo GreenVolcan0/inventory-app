@@ -1,0 +1,71 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: inv-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 1m30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./back
+    container_name: inv-back
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./back:/app
+#      - ./backups:/backups
+#    environment:
+#      BACKUP_DIR: /backups
+    command: >
+      sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+#  frontend:
+#    image: node:20-alpine
+#    container_name: map-front
+#    restart: unless-stopped
+#    working_dir: /app
+#    volumes:
+#      - ./front:/app
+#      - /app/node_modules
+#    environment:
+#      - CHOKIDAR_USEPOLLING=true
+#      - WDS_SOCKET_PORT=0
+#      - WATCHPACK_POLLING=true
+#      - REACT_APP_API_URL=/api
+#    ports:
+#      - "4376:4376"
+#    command: sh -c "npm install --no-audit --no-fund --loglevel=error && npm run dev"
+#    depends_on:
+#      - backend
+#
+#  nginx:
+#    image: nginx:alpine
+#    container_name: map-nginx
+#    restart: unless-stopped
+#    ports:
+#      - "80:80"
+#    volumes:
+#      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+#    depends_on:
+#      - frontend
+#      - backend
+#
+volumes:
+  postgres_data:
