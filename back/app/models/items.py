@@ -1,6 +1,6 @@
 from sqlalchemy import Enum, func, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.core.database import Base, int_pk, int_uniq, str_uniq
+from app.core.database import Base, int_pk, str_uniq
 from datetime import datetime
 import enum
 

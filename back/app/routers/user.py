@@ -1,10 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.core.dependencies import require_role, get_current_user
+from app.core.dependencies import require_role
 from app.models.users import User, UserRole
-from app.schemas.user import UserCreateIn, UserUpdateRoleIn, UserOut
+from app.schemas.user import UserCreateIn, UserUpdateRoleIn, UserOut, UpdatePasswordIn
 from app.services.auth import get_password_hash
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -62,3 +62,17 @@ def delete_user(
 
     db.delete(user)
     db.commit()
+
+@router.patch("/{user_id}/update-password")
+def change_password(
+    user_id: int,
+    data: UpdatePasswordIn,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.super_admin))
+):
+    user = db.query(User).filter(User.id == user_id)
+    user.password_hash = get_password_hash(data.new_password)
+
+    db.commit()
+
+    return {"message": "Passowrd updated"}

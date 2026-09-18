@@ -20,3 +20,6 @@ class UserOut(BaseModel):
     last_name: str
     role: UserRole
     is_active: bool
+
+class UpdatePasswordIn(BaseModel):
+    new_password: str

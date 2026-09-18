@@ -1,6 +1,6 @@
-from sqlalchemy import Enum, func, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
-from app.core.database import Base, int_pk, int_uniq, str_uniq
+from sqlalchemy import UniqueConstraint
+from sqlalchemy.orm import Mapped
+from app.core.database import Base, int_pk
 
 class Holder(Base):
     __tablename__ = "holders"
