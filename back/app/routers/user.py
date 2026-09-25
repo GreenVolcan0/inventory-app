@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.dependencies import require_role
 from app.models.users import User, UserRole
-from app.schemas.user import UserCreateIn, UserUpdateRoleIn, UserOut, UpdatePasswordIn
+from app.schemas.user import UserCreateIn, UserUpdateRoleIn, UserOut, UpdatePasswordIn, UserMe
 from app.services.auth import get_password_hash
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -12,6 +12,13 @@ router = APIRouter(prefix="/users", tags=["users"])
 @router.get("", response_model=list[UserOut])
 def list_users(db: Session = Depends(get_db), _ = Depends(require_role(UserRole.super_admin))):
     return db.query(User).all()
+
+@router.get("/me", response_model=UserMe)
+def me(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.guest))
+):
+    return current_user
 
 @router.post("", response_model=UserOut, status_code=201)
 def create_user(data: UserCreateIn, db: Session = Depends(get_db), _ = Depends(require_role(UserRole.super_admin))):
