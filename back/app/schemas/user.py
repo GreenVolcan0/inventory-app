@@ -23,3 +23,12 @@ class UserOut(BaseModel):
 
 class UpdatePasswordIn(BaseModel):
     new_password: str
+
+class UserMe(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    login: str
+    first_name: str
+    last_name: str
+    role: UserRole

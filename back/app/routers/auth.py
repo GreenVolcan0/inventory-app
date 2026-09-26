@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.users import User
 from app.services.auth import check_password, create_access_token, create_refresh_token, decode_token
-from app.schemas.auth import TokenOut
+from app.schemas.auth import TokenOut, RefreshIn
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -27,13 +27,15 @@ def login(
 
 @router.post("/refresh", response_model=TokenOut)
 def refresh(
-    refresh_token: str,
+    data: RefreshIn,
     db: Session = Depends(get_db)
 ):
     try:
-        payload = decode_token(refresh_token)
-        if payload.get("type") != "refresh": raise HTTPException(401, "invalid token type")
-    except Exception: raise HTTPException(401, "invalid refresh token")
+        payload = decode_token(data.refresh_token)
+        if payload.get("type") != "refresh":
+            raise HTTPException(401, "invalid token type")
+    except Exception:
+        raise HTTPException(401, "invalid refresh token")
 
     user = db.query(User).filter(User.id == int(payload["sub"])).first()
     if not user or not user.is_active:
