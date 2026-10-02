@@ -19,7 +19,7 @@ class Item(Base):
     serial_num: Mapped[str_uniq]
     inventory_num: Mapped[str_uniq]
     status: Mapped[ItemStatus] = mapped_column(Enum(ItemStatus, name="in_stock"), default=ItemStatus.in_stock, server_default="in_stock", nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(server_default=func.now(), onupdate=func.now())
     editor_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
     category: Mapped["Category"] = relationship()

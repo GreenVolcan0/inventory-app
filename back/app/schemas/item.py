@@ -1,9 +1,8 @@
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict
 from app.models.items import ItemStatus
 from datetime import datetime
 from app.schemas.item import ItemStatus
 from app.schemas.category import CategoryOut
-from app.schemas.holder import HolderOut
 
 class ItemOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)

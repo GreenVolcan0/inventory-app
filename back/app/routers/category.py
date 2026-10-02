@@ -1,15 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from app.models.categories import Category
+from app.models.users import UserRole
 from sqlalchemy.exc import IntegrityError
-
 from app.core.database import get_db
 from app.core.dependencies import require_role
-from app.models.categories import Category
 from app.models.users import UserRole
 from app.schemas.category import CategoryOut, CategoryCreateIn, CategoryUpdateIn
 
-
-router = APIRouter(prefix="/caregories", tags=["categories"])
+router = APIRouter(prefix="/categories", tags=["categories"])
 
 @router.get("", response_model=list[CategoryOut])
 def list_categories(db: Session = Depends(get_db), _ = Depends(require_role(UserRole.guest))):
@@ -50,5 +49,3 @@ def delete_category(category_id: int, db: Session = Depends(get_db), _=Depends(r
     except IntegrityError:
         db.rollback()
         raise HTTPException(400, "Cannot delete category")
-
-    

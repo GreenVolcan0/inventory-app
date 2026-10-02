@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from datetime import datetime
 
 from app.core.database import get_db
 from app.core.dependencies import require_role
 from app.models.items import Item, ItemStatus
 from app.models.holders import Holder
+from app.models.categories import Category
 from app.models.item_logs import ItemLog, LogAction
 from app.models.users import User, UserRole
 from app.schemas.item import ItemOut, ItemCreateIn, ItemUpdatedIn
@@ -34,13 +37,15 @@ def list_items(
     category_id: int | None = None,
     holder_id: int | None = None,
     status: ItemStatus | None = None,
-    search: str | None = Query(None, description="Поиск по серийному или инв. номеру"),
+    search: str | None = Query(None),
+    date1: datetime | None = Query(None),
+    date2: datetime | None = Query(None),
     limit: int = Query(100, le=500),
     offset: int = 0,
     db: Session = Depends(get_db),
     _=Depends(require_role(UserRole.guest)),
 ):
-    query = db.query(Item)
+    query = db.query(Item).join(Item.category).outerjoin(Item.holder)
     if category_id is not None:
         query = query.filter(Item.category_id == category_id)
     if holder_id is not None:
@@ -49,7 +54,19 @@ def list_items(
         query = query.filter(Item.status == status)
     if search:
         like = f"%{search}%"
-        query = query.filter((Item.serial_num.ilike(like)) | (Item.inventory_num.ilike(like)))
+        query = query.filter(or_(
+            Item.model.ilike(like),
+            Item.serial_num.ilike(like),
+            Item.inventory_num.ilike(like),
+            Category.name.ilike(like),
+            Category.num.ilike(like),
+            Holder.first_name.ilike(like),
+            Holder.last_name.ilike(like),
+            Holder.patronymic.ilike(like)))
+    if date1 is not None:
+        query = query.filter(Item.updated_at >= date1)
+    if date2 is not None:
+        query = query.filter(Item.updated_at <= date2)
 
     return query.order_by(Item.id).offset(offset).limit(limit).all()
 
