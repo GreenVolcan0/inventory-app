@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
 from app.core.database import get_db
-from app.core.dependencies import require_role
 from app.models.users import User, UserRole
+from app.core.dependencies import require_role
 from app.schemas.user import UserCreateIn, UserUpdateRoleIn, UserOut, UpdatePasswordIn, UserMe
 from app.services.auth import get_password_hash
 
